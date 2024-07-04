@@ -15,6 +15,11 @@ module ftlib_quadrature
         module procedure trapezoidal_rule_a
     end interface
 
+    interface gaussian_quadrature
+        module procedure gaussian_quadrature_1d
+        module procedure gaussian_quadrature_nd
+    end interface
+
     interface
         module function rectangle_rule_f(x, f) result(integral)
             real(dp)           , intent(in) :: x(:)
@@ -36,12 +41,18 @@ module ftlib_quadrature
             real(dp), intent(in) :: f(:)
             real(dp)             :: integral
         end function trapezoidal_rule_a
-        module function gaussian_quadrature(x, f, N) result(integral)
+        module function gaussian_quadrature_1d(x, f, N) result(integral)
             real(dp)           , intent(in) :: x(:)
             type(function_type), intent(in) :: f
             integer            , intent(in) :: N
             real(dp)                        :: integral
-        end function gaussian_quadrature
+        end function gaussian_quadrature_1d
+        module function gaussian_quadrature_nd(x, f, N) result(integral)
+            real(dp)           , intent(in) :: x(:,:)
+            type(function_type), intent(in) :: f
+            integer            , intent(in) :: N
+            real(dp)                        :: integral
+        end function gaussian_quadrature_nd
     end interface
 
 end module ftlib_quadrature

@@ -1,12 +1,13 @@
 module ftlib_grid2D
 
     use ftlib_kinds, only : dp
+    use ftlib_grid , only :grid
 
     implicit none
     private 
     public :: grid2D
 
-    type :: grid2D
+    type, extends(grid) :: grid2D
         integer               :: Nx, Ny
         real(dp)              :: x0, y0
         real(dp)              :: Lx, Ly

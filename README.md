@@ -2,4 +2,6 @@
 
 A fortran library for numerical analysis.
 
-## Depndencies
+## Dependencies
+
+Some modules require *lapack*.

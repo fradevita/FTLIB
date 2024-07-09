@@ -1,7 +1,7 @@
-module ftlib_polynomals
+module ftlib_polynomials
 
     use ftlib_kinds , only : dp
-    use ftlib_grid2d
+    use ftlib_grid
     use ftlib_io
     use ftlib_function
 
@@ -27,11 +27,11 @@ module ftlib_polynomals
 contains
 
     !===============================================================================================
-    subroutine init_polynomial_reconstruction(order, G)
+    subroutine init_polynomial_reconstruction(order, delta)
 
         ! In/Out variables
-        integer      , intent(in) :: order
-        class(grid2d), intent(in) :: G
+        integer , intent(in) :: order
+        real(dp), intent(in) :: delta
         
         ! Local variables
         integer                               :: info, lwork
@@ -41,9 +41,9 @@ contains
         real(dp), dimension(:,:), allocatable :: A, AT, inv_ATA
 
         ! For the moment the reconstruction works only for equispaced grid
-        if (G%dx .ne. G%dy) then
-           call print_error_message('ERROR: polynomial reconstuction works only for dx == dy.')
-        endif
+        ! if (G%dx .ne. G%dy) then
+        !    call print_error_message('ERROR: polynomial reconstuction works only for dx == dy.')
+        ! endif
 
         ! Select problem size
         m = 9
@@ -59,9 +59,8 @@ contains
         allocate(A(m,n))
         block
             integer  :: i, j, row
-            real(dp) :: delta, x, y
+            real(dp) :: x, y
             row = 1
-            delta = G%dx
             do j = -1,1
                 y = delta*real(j, dp)
                 do i = -1,1
@@ -157,4 +156,4 @@ contains
     !===============================================================================================
 
 
-end module ftlib_polynomals
+end module ftlib_polynomials

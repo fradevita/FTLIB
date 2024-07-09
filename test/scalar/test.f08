@@ -1,16 +1,26 @@
 program test
 
-    use ftlib_grid2d
-    use ftlib_scalar2d
+    use ftlib_kinds
+    use ftlib_grid
+    use ftlib_scalar
 
     implicit none
 
-    type(grid2d), target :: G
-    type(scalar2d)       :: s
+    integer , parameter :: N = 2
+    real(dp), parameter :: L = 1.0_dp
 
-    G = grid2d([2, 2], [1.0_dp, 1.0_dp], [0.0_dp, 0.0_dp], 'G')
-    s = scalar2d(G, 0)  
-    
+    type(grid)   :: G
+    type(scalar) :: s
+
+    ! Create 1d grid
+    G = grid(logical_size = [N, 1, 1], &
+             physical_size = [L, L/N, L/N], &
+             origin = [0.0_dp, 0.0_dp, 0.0_dp], &
+             name = 'grid')
+
+    ! Create the scalar s on the grid G
+    s = scalar(G, [0, 0, 0], 's')
+
     call G%destroy()
     call s%destroy()
 

@@ -9,4 +9,4 @@ test.e: test.f08
 
 .PHONY: clean
 clean:
-	rm -rf test.e
+	rm -rf test.e *.json

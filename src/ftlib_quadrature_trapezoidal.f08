@@ -1,4 +1,4 @@
-submodule (ftlib_quadrature) ftlib_quadrature_rectangle
+submodule (ftlib_quadrature) ftlib_quadrature_trapezoidal
     use ftlib_kinds
     use ftlib_function
     use ftlib_io

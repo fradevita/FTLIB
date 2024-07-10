@@ -16,6 +16,7 @@ module ftlib_scalar
         procedure, pass(self) :: destroy
         procedure, pass(self) :: set_from_function
         procedure, pass(self) :: update_ghost_nodes
+        procedure, pass(self) :: write
     end type
 
     interface scalar
@@ -80,7 +81,45 @@ contains
 
     end subroutine update_ghost_nodes
     !===============================================================================================
-   
+    
+    !===============================================================================================
+    subroutine write(self, Ndim, fmt, filename)
+
+        ! In/Out variables
+        class(scalar)   , intent(in)           :: self
+        integer         , intent(in)           :: Ndim
+        character(len=*), intent(in)           :: fmt
+        character(len=*), intent(in), optional :: filename
+
+        ! Local variables
+        integer           :: f_id, i, j
+        character(len=99) :: output_file
+
+        output_file = trim(self%name)//'.txt'
+        if (present(filename)) output_file = filename
+
+        if (fmt == 'ASCII') then
+            open(newunit = f_id, file = trim(output_file))
+            select case (Ndim)
+            case(1)
+                do i = 1,self%G%hi(1)
+                    write(f_id,*) self%G%xc(i), self%f(i,1,1)
+                end do
+            case(2)
+                do j = 1,self%G%hi(2)
+                    do i = 1,self%G%hi(1)
+                        write(f_id,*) self%G%xc(i), self%G%yc(j), self%f(i,j,1)
+                    end do
+                    write(f_id,*) ''
+                end do
+            end select
+        endif
+
+        close(f_id)
+
+    end subroutine write
+    !===============================================================================================
+    
     !===============================================================================================
     subroutine destroy(self)
 

@@ -92,14 +92,14 @@ contains
         character(len=*), intent(in), optional :: filename
 
         ! Local variables
-        integer           :: f_id, i, j
+        integer           :: f_id, i, j, reclen
         character(len=99) :: output_file
 
-        output_file = trim(self%name)//'.txt'
+        output_file = trim(self%name)
         if (present(filename)) output_file = filename
 
         if (fmt == 'ASCII') then
-            open(newunit = f_id, file = trim(output_file))
+            open(newunit = f_id, file = trim(output_file)//'.txt')
             select case (Ndim)
             case(1)
                 do i = 1,self%G%hi(1)
@@ -113,8 +113,22 @@ contains
                     write(f_id,*) ''
                 end do
             end select
-        endif
+        elseif (fmt == 'RAW') then
+           
+            select case (Ndim)
+            case(1)
+                inquire(iolength=reclen) self%f(1:self%G%hi(1), 1, 1)
+                open(newunit = f_id, file = trim(output_file)//'.raw', form='unformatted', &
+                        status='unknown', access='direct', action='write', recl=reclen)
+                write(f_id, rec = 1) self%f(1:self%G%hi(1),1,1)
+            case(2)
+                inquire(iolength=reclen) self%f(1:self%G%hi(1),1:self%G%hi(2), 1)
+                open(newunit = f_id, file = trim(output_file)//'.raw', form='unformatted', &
+                        status='unknown', access='direct', action='write', recl=reclen)
+                write(f_id, rec = 1) self%f(1:self%G%hi(1),1:self%G%hi(2),1)
+            end select
 
+        endif
         close(f_id)
 
     end subroutine write

@@ -37,6 +37,7 @@ contains
         constructor%G => G
         constructor%gl = gl
         allocate(constructor%f(-gl(1)+1:G%hi(1)+gl(1),-gl(2)+1:G%hi(2)+gl(2),-gl(3)+1:G%hi(3)+gl(3)))
+        constructor%f = 0.0_dp
         if (present(name)) constructor%name = name
 
     end function constructor

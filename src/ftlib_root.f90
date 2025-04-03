@@ -3,7 +3,7 @@
 module ftlib_root
 
     use ftlib_kinds   , only : dp
-    use ftlib_function, only : function_procedure
+    use ftlib_function, only : function_type
     use ftlib_io      , only : print_error_message
 
     implicit none
@@ -17,8 +17,8 @@ module ftlib_root
         real(dp) :: tol         
         integer  :: max_iter
         !< pointers to the function and function derivative
-        procedure(function_procedure), nopass, pointer :: evaluate_f
-        procedure(function_procedure), nopass, pointer :: evaluate_df
+        type(function_type), pointer :: f => Null()
+        type(function_type), pointer :: df => Null()
         contains
             procedure                      , pass(self)           :: setup
             procedure(root_solver_function), pass(self), deferred :: find_root
@@ -60,16 +60,16 @@ contains
         real(dp)                     , intent(in   ) :: b        !< upper extreme of the interval
         real(dp)                     , intent(in   ) :: tol      !< tolerance of the solver
         integer                      , intent(in   ) :: max_iter !< maximum number of iterations
-        procedure(function_procedure)                :: f        !< user defined function
-        procedure(function_procedure), optional      :: df
+        type(function_type), target  , intent(in   ) :: f        !< user defined function
+        type(function_type), target  , optional      :: df       !< user defined function derivative
 
         ! Setup self object
         self%a = a
         self%b = b
         self%tol = tol
         self%max_iter = max_iter
-        self%evaluate_f => f
-        if (present(df)) self%evaluate_df => df
+        self%f => f
+        if (present(df)) self%df => df
 
     end subroutine setup
     !===============================================================================================
@@ -90,7 +90,7 @@ contains
         b = self%b
 
         ! Check that the pointer evaluate_f is associated
-        if (associated(self%evaluate_f) .eqv. .false.) then
+        if (associated(self%f) .eqv. .false.) then
             call print_error_message('ERROR: the pointer evaluate_f must be associated.')
         endif
 
@@ -101,7 +101,7 @@ contains
             c = (a + b)/2.0_dp
 
             ! Evaluate the function in the midpoint
-            fc = self%evaluate_f([c])
+            fc = self%f%f([c], self%f%args)
 
             ! Check for convergence
             if (abs(fc) < self%tol) then
@@ -109,8 +109,8 @@ contains
                 exit iterate
             else
                 ! Search new interval
-                fa = self%evaluate_f([a])
-                fb = self%evaluate_f([b])
+                fa = self%f%f([a], self%f%args)
+                fb = self%f%f([b], self%f%args)
 
                 if (fa*fc < 0.0_dp) then
                     !use [a, c]
@@ -144,7 +144,7 @@ contains
         real(dp) :: x0, x1
 
         ! Check that the pointer evaluate_f is associated
-        if (associated(self%evaluate_f) .eqv. .false.) then
+        if (associated(self%f) .eqv. .false.) then
             call print_error_message('ERROR: the pointer evaluate_f must be associated.')
         endif
 
@@ -154,8 +154,8 @@ contains
         ! Start iterations
         iterate: do iter = 1,self%max_iter
 
-            x2 = x1 - self%evaluate_f([x1])*(x1 - x0)/ &
-                 (self%evaluate_f([x1]) - self%evaluate_f([x0]))
+            x2 = x1 - self%f%f([x1], self%f%args)*(x1 - x0)/ &
+                 (self%f%f([x1], self%f%args) - self%f%f([x0], self%f%args))
 
             ! Check for convergence
             if (abs(x2 - x1) < self%tol) then
@@ -167,7 +167,7 @@ contains
             endif
 
 #ifdef VERBOSE
-            print '(A11,I3,A12,E16.8)', 'Iteration: ', iter, 'Residual: ', self%evaluate_f([x2])
+            print '(A11,I3,A12,E16.8)', 'Iteration: ', iter, 'Residual: ', self%f%f([x2], self%f%args)
 #endif
 
         end do iterate
@@ -187,10 +187,10 @@ contains
         real(dp) :: x0
 
         ! Check that the pointer evaluate_f is associated
-        if (associated(self%evaluate_f) .eqv. .false.) then
+        if (associated(self%f) .eqv. .false.) then
             call print_error_message('ERROR: the pointer evaluate_f must be associated.')
         endif
-        if (associated(self%evaluate_df) .eqv. .false.) then
+        if (associated(self%df) .eqv. .false.) then
             call print_error_message('ERROR: the pointer evaluate_df must be associated.')
         endif
 
@@ -200,7 +200,7 @@ contains
         ! Start iterations
         iterate: do iter = 1,self%max_iter
 
-            x1 = x0 - self%evaluate_f([x0])/(self%evaluate_df([x0]) + 1.0e-16_dp)
+            x1 = x0 - self%f%f([x0], self%f%args)/(self%df%f([x0], self%df%args) + 1.0e-16_dp)
 
             ! Check for convergence
             if (abs(x1 - x0) < self%tol) then
@@ -211,7 +211,7 @@ contains
             endif
 
 #ifdef VERBOSE
-            print '(A11,I3,A12,E16.8)', 'Iteration: ', iter, 'Residual: ', self%evaluate_f([x1])
+            print '(A11,I3,A12,E16.8)', 'Iteration: ', iter, 'Residual: ', self%f%f([x1], self%f%args)
 #endif
 
         end do iterate

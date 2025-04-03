@@ -2,6 +2,7 @@ program test
 
     use ftlib_kinds
     use ftlib_root
+    use ftlib_function
 
     implicit none
 
@@ -14,12 +15,16 @@ program test
     ! Variable
     real(dp)                 :: x0
     class(root), allocatable :: root_solver
+    type(function_type)      :: f, df
+
+    f%f => my_function
+    df%f => my_derivative
 
     !***********************************************************************************************
     print *, '**** Using bisection method ****'
     ! Setup the bisection solver
     allocate(bisection::root_solver) ! now root_solver is of dynamic type bisection
-    call root_solver%setup(a, b, tol, max_iter, my_function)
+    call root_solver%setup(a, b, tol, max_iter, f)
 
     ! Find the root with the bisection solver
     x0 = root_solver%find_root()
@@ -31,7 +36,7 @@ program test
     print *, '**** Using secant method ****'
     ! Setup the secant solver
     allocate(secant::root_solver) ! now root_solver is of dynamic type secant
-    call root_solver%setup(a, b, tol, max_iter, my_function)
+    call root_solver%setup(a, b, tol, max_iter, f)
 
     ! Find the root with the secant solver
     x0 = root_solver%find_root()
@@ -43,7 +48,7 @@ program test
     print *, '**** Using newton raphson method ****'
     ! Setup the newton-raphson solver
     allocate(newton_raphson::root_solver) ! now root_solver is of dynamic type newton_raphson
-    call root_solver%setup(a, b, tol, max_iter, my_function, my_derivative)
+    call root_solver%setup(a, b, tol, max_iter, f, df)
 
     ! Find the root with the newton-raphson solver
     x0 = root_solver%find_root()
